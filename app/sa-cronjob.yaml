@@ -1,0 +1,69 @@
+# не знаю на сколько хорошая идея, но можно в ночное время выставлять меньшее количество реплик подов у hpa
+# и править pba, для этого создаю SA и добавляю cronjob
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hpa-scaler
+  namespace: httpbin-test
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hpa-scaler-binding
+  namespace: httpbin-test
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit  # или scale
+subjects:
+- kind: ServiceAccount
+  name: hpa-scaler
+  namespace: httpbin-test
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: scale-down-night
+  namespace: httpbin-test
+spec:
+  schedule: "00 01 * * *"
+  timeZone: Europe/Moscow
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: hpa-scaler
+          containers:
+          - name: scale
+            image: bitnami/kubectl:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              kubectl patch hpa httpbin-hpa -n httpbin-test --type='merge' -p '{"spec":{"minReplicas":2}}' &&
+              kubectl patch pdb httpbin-pdb -n httpbin-test --type='merge' -p '{"spec":{"maxUnavailable":0,"minAvailable":null}}'
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: scale-up-morning
+  namespace: httpbin-test
+spec:
+  schedule: "00 08 * * *"
+  timeZone: Europe/Moscow
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: hpa-scaler
+          containers:
+          - name: scale
+            image: bitnami/kubectl:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              kubectl patch hpa httpbin-hpa -n httpbin-test --type='merge' -p '{"spec":{"minReplicas":5}}' &&
+              kubectl patch pdb httpbin-pdb -n httpbin-test --type='merge' -p '{"spec":{"minAvailable":4,"maxUnavailable":null}}'
+          restartPolicy: OnFailure

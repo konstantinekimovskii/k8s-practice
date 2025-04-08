@@ -1,0 +1,7 @@
+# Создаю отдельное пространство
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: httpbin-test
+  labels:
+    purpose: mind-testing

@@ -1,0 +1,62 @@
+# В качестве примера взят образ kennethreitz/httpbin
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+  namespace: httpbin-test
+spec:
+  # по ТЗ 4 пода справляются с пиковыми нагрузками, добавил 1 в случае недоступности ноды/зоны, чтобы избежать деградации
+  # сейчас при потери зоны с 2 подами, останется в пике 3 пода, что скорее всего не очень хорошо, зато меньше ресурсов кушаем :)
+  # но если топить за надёжность/устойчивость, то лучше минимум держать 6-7
+  replicas: 5
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        app: httpbin
+    spec:
+      # распределяем поды по зонам (стремимся к 2-2-1) + по нодам (не деплоем на одну и ту же ноду в зоне если можно)
+      # разница в 1 под между нагруженными/ненагруженными зонами/нодами
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: httpbin
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: httpbin
+      containers:
+      - name: httpbin
+        image: kennethreitz/httpbin
+        ports:
+        - containerPort: 80
+        # 3 пробы на старт по 5 секунд (минимально по ТЗ старт за 5с), затем если всё ок проба готовности
+        # можно в целом без initialDelaySeconds раз мы уверены 
+        startupProbe:
+          httpGet:
+            path: /get
+            port: 80
+          failureThreshold: 3
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /get
+            port: 80
+#          initialDelaySeconds: 10
+          periodSeconds: 5
+        # по ТЗ потребление памяти не более 128Mi, поэтому запрашиваемые ресурсы и их ограничение ставим в 128
+        # а cpu скачет при старте, поставил в лимит в 0.5, чтобы дать возможность стартануть
+        resources:
+          requests:
+            cpu: "0.1"
+            memory: "128Mi"
+          limits:
+            cpu: "0.5"
+            memory: "128Mi"
