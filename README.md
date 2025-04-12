@@ -6,13 +6,13 @@
 
 ### [Managed Kubernetes в Yandex.Cloud](labs/yandex-managed-k8s)
 
-* Мультизональный кластер (3 зоны, 6 нод).
-* NAT-инстанс, публичные мастера, приватные воркеры.
-* Terraform, Helm, kubectl, простое приложение.
+* Мультизональный кластер.
+* NAT-инстанс, публичные control-plane ноды, приватные workers ноды.
+* Terraform, Helm, kubectl, пример простого приложения.
 
 ### [Kubernetes кластер в Proxmox](labs/proxmox-k8s-cluster)
 
-* Кластер из 2+ виртуалок в Proxmox (1 master + 1+ workers).
+* Кластер из 2+ VM в Proxmox (1 control-plane + N workers).
 * Cloud-init, Terraform, MetalLB, ingress-nginx.
 * Локальный стенд для CICD, DevOps, тестов.
 
