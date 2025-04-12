@@ -21,7 +21,7 @@ resource "yandex_vpc_default_security_group" "common-sec-group" {
     v4_cidr_blocks = ["0.0.0.0/0"]
     port           = 22
   }
-  
+
   ingress {
     protocol       = "TCP"
     description    = "web-app"
@@ -35,7 +35,7 @@ resource "yandex_vpc_default_security_group" "common-sec-group" {
     v4_cidr_blocks = ["0.0.0.0/0"]
     port           = 443
   }
-  
+
   ingress {
     protocol       = "TCP"
     description    = "LB-in-kuber"

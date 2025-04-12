@@ -1,4 +1,3 @@
-# сервис для доступа к подикам внутри кластера :)
 apiVersion: v1
 kind: Service
 metadata:

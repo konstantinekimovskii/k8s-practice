@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+  namespace: httpbin-test
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        app: httpbin
+    spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: httpbin
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: httpbin
+      containers:
+      - name: httpbin
+        image: kennethreitz/httpbin
+        ports:
+        - containerPort: 80
+        startupProbe:
+          httpGet:
+            path: /get
+            port: 80
+          failureThreshold: 3
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /get
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            cpu: "0.1"
+            memory: "128Mi"
+          limits:
+            cpu: "0.5"
+            memory: "128Mi"

@@ -122,7 +122,7 @@ resource "yandex_kubernetes_node_group" "k8s-node-group" {
 
   scale_policy {
     fixed_scale {
-      size = 5
+      size = 6
     }
   }
 

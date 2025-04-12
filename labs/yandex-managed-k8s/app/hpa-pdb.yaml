@@ -1,5 +1,3 @@
-# автоматически масштабирую количество подов на основе нагрузки по AverageValue CPU
-# приложение не должно есть больше 100m по ТЗ, добавил 50m чтобы избежать лишнего масштабирования
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -10,8 +8,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: httpbin
-  minReplicas: 5
-  maxReplicas: 6
+  minReplicas: 6
+  maxReplicas: 7
   metrics:
   - type: Resource
     resource:
@@ -20,7 +18,6 @@ spec:
         type: AverageValue
         averageValue: "150m"
 ---
-# не даю "убить" больше одного пода, чтобы было не меньше 4 на случай "осушения" ноды
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:

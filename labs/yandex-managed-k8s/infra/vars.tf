@@ -12,7 +12,7 @@ variable "project-folder" {
 
 # Определяем пользователя и его открытый ключ на NAT инстансе
 variable "nat_user" {
-  type = string
+  type    = string
   default = ""
 }
 variable "nat_public_key" {
@@ -21,7 +21,7 @@ variable "nat_public_key" {
 
 # Определяем пользователя и его открытый ключ на нодах Kubernetes
 variable "k8s_node_user" {
-  type = string
+  type    = string
   default = ""
 }
 variable "k8s_public_key" {
